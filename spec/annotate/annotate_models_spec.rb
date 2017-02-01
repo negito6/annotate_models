@@ -1500,6 +1500,33 @@ end
       end
     end
 
+    describe "if a file path was given from ARGV" do
+      before do
+        @file_name = 'user.rb'
+        write_model(@file_name, <<-EOS)
+          class User < ActiveRecord::Base
+          end
+        EOS
+        class User < ActiveRecord::Base; end
+        allow(User).to receive(:table_exists?) { true }
+
+        schema_info = AnnotateModels.get_schema_info(mock_class(:users, :id, [mock_column(:id, :integer)]), '== Schema Info')
+        allow(AnnotateModels).to receive(:get_schema_info) { schema_info }
+
+        @file_path = File.join(@model_dir, @file_name)
+        allow(AnnotateModels).to receive(:resolve_filename) { @file_path }
+
+        ARGV.clear
+        ARGV.concat([@file_path])
+      end
+
+      it 'displays a success message' do
+        expect(capturing(:stdout) do
+          AnnotateModels.do_annotations
+        end).to include("Annotated (1): #{@file_path}")
+      end
+    end
+
     describe "if a file can't be annotated" do
       before do
         allow(AnnotateModels).to receive(:get_loaded_model).with('user').and_return(nil)
