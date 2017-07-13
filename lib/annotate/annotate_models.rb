@@ -733,7 +733,7 @@ module AnnotateModels
 
       annotated = []
       get_model_files(options).each do |path, filename|
-        annotate_model_file(annotated, File.join(path, filename), header, options)
+        annotate_model_file(annotated, File.join(*[path, filename].compact), header, options)
       end
 
       if annotated.empty?
